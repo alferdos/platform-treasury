@@ -1,35 +1,17 @@
-# Build stage for frontend
-FROM node:16-alpine AS frontend-builder
-
-WORKDIR /app/frontend
-
-# Copy frontend package files
-COPY frontend/package*.json ./
-
-# Install dependencies with legacy peer deps flag
-RUN npm install --legacy-peer-deps --no-optional || npm install --legacy-peer-deps
-
-# Copy frontend source
-COPY frontend/ ./
-
-# Build React application
-RUN npm run build || echo "Frontend build completed"
-
-# Build stage for backend and final image
 FROM node:16-alpine
 
 WORKDIR /app
 
-# Install git (required for some npm packages)
+# Install git for npm packages that need it
 RUN apk add --no-cache git
 
-# Copy package files from root
+# Copy package files
 COPY package*.json ./
 
-# Install backend dependencies
-RUN npm install --legacy-peer-deps --no-optional || npm install --legacy-peer-deps
+# Install backend dependencies with npm ci (more reliable than npm install)
+RUN npm ci --production || npm install --production
 
-# Copy backend source code
+# Copy backend source
 COPY server.js ./
 COPY Routes/ ./Routes/
 COPY Model/ ./Model/
@@ -38,14 +20,12 @@ COPY config/ ./config/
 COPY validation/ ./validation/
 COPY propertyCtrl.js ./
 
-# Copy built frontend from frontend-builder stage (if build succeeded)
-COPY --from=frontend-builder /app/frontend/build ./frontend/build || true
+# Copy pre-built frontend (already in your repo)
+COPY frontend/build ./frontend/build
 
 # Expose port
 EXPOSE 8080
 
-# Set environment to production
 ENV NODE_ENV=production
 
-# Start the application
 CMD ["node", "server.js"]
