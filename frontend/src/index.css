@@ -1,0 +1,55 @@
+/* body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+} */
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap');
+@font-face {
+  font-family: 'Adrianna';
+  src: local('./fonts/Adrianna Regular'), 
+  local('./fonts/Adrianna-Regular'),
+      url('./fonts/Adrianna-Regular.woff2') format('woff2'),
+      url('./fonts/Adrianna-Regular.woff') format('woff'),
+      url('./fonts/Adrianna-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Adrianna';
+  src: local('./fonts/Adrianna Bold'),
+   local('./fonts/Adrianna-Bold'),
+      url('./fonts/Adrianna-Bold.woff2') format('woff2'),
+      url('./fonts/Adrianna-Bold.woff') format('woff'),
+      url('./fonts/Adrianna-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+
+h1,h2,h3,h4,h5,h6{
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+}
+*,
+::after,
+::before {
+  box-sizing: border-box;
+}
+:root {
+  scroll-behavior: smooth;
+}
+body {
+  font-family: 'Adrianna';
+  margin: 0px;
+  padding: 0px;
+}
+
+

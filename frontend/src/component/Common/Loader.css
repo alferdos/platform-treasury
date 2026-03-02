@@ -1,0 +1,15 @@
+.loader {
+	justify-content: center;
+	align-items: center;
+	position: fixed;
+	width: auto;
+	height: 70px;
+	text-align: center;
+	width: 90px;
+}
+.loader img {
+	width: 75px;
+}
+.loader p {
+   	font-weight: bold !important;
+}

@@ -1,0 +1,209 @@
+.tableScroll {
+    max-height: 229px;
+    overflow: auto;
+}
+
+.paper {
+	background-color: transparent;
+    right: 0;
+    margin: auto;
+    top: 25% !important;
+    border: 0;
+    border-radius: 0;
+    position: relative;
+    padding: 0px !important;
+	outline: 0;
+    width: 33%;
+ }
+ .paper-inner {
+    padding: 30px;
+	background:#fff;
+}
+
+.transModal .paper-inner {
+	overflow-y: auto;
+	height: 450px;
+}
+
+.paper_h2 {
+	font-size: 32px;
+}
+
+.paper-head {
+	background: #fff;
+	padding: 10px 0px 0px 30px;
+	border-bottom: 1px solid #dee2e6;
+  }
+
+.paper-head span {
+	color: #000;
+	position: absolute;
+	right: 10px;
+	top: 3px;
+	cursor: pointer;
+	font-size: 20px;
+}
+.battery.fullupload{
+	border:3px solid #7BF5FB;
+	background: rgba(123, 245, 251, 0.2);
+}
+.battery {
+    padding: 1px 5px;
+    width: 100%;
+    border: 3px solid #2f2f37;
+    position: relative;
+    height: 30px;
+	border-radius: 4px;
+    margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+.prog_bar_grd {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 0px;
+	margin-bottom: 8px;
+}
+.buy-btnbtc .parti{
+	font-style: normal;
+	font-weight: normal;
+	font-size: 14px;
+	line-height: 20px;
+	text-transform: capitalize;
+	color: #ffffff;
+}
+.bar.active {
+	background: #7bf5fb;
+	border-radius:5px;
+}
+.bar.active:last-child {
+	margin-right: 0px;
+}
+.buy-btnbtc {
+	display: flex;
+	justify-content: space-between;
+}
+.detail_card .parti p{
+	font-size: 12px;
+	opacity: 0.5;
+	color: #fff;;
+	margin-right: 6px;
+	margin-bottom: 0;
+}
+.allocation .status-p{
+	font-size: 12px;
+	font-weight:400 !important;
+	line-height: 18px;
+	font-family: 'Adrianna';
+	color:#fff;
+	margin-top: 20px;
+	opacity: 0.5;
+}
+.detail_card .allocation .rts h3 {
+    font-size: 20px !important;
+	line-height: 30px;
+	margin:0;
+}
+
+span.error {
+  color: red;
+  font-style: italic;
+}
+
+.propertyListTable img {
+	width: 70px;
+}
+
+.image-upload>input {
+	display: none;
+}
+
+.image-upload img
+{
+    cursor: pointer;
+}
+
+.file-upload>input {
+	display: none;
+}
+
+.file-upload img
+{
+    cursor: pointer;
+}
+
+.edit-image-upload img {
+	height: 110px;
+	margin: 0 10px 10px 0px;
+}
+
+.edit-file-upload img
+{
+    width: 70px;
+}
+
+.uploaded-images .thumbnail {
+	width: 150px;
+	height: 150px;
+	display: inline-block;
+	margin: 0 10px 10px 0;
+}
+
+.uploaded-images .thumbnail img {
+	width: 100%;
+	height: 100%;
+}
+
+.uploaded-images .thumbnail button {
+	position: absolute;
+	background: transparent;
+	border: solid 1px silver;
+}
+
+.btnClick {
+	display: none;
+}
+
+.navbar-expand-lg .navbar-nav .nav-link.rounded.profile img {width: 32px;border-radius: 50%;height: 32px;object-fit: cover;}
+.profile_img {width: 190px;height: 190px;object-fit: cover;border-radius: 50%;}
+.profile_details .btn {width: 100%;height: 54px;}
+
+.editPropertyPage .nav {
+	display: block ruby;
+	text-align: center;
+}
+
+.editPropertyPage #myTabContent {
+	margin: 28px 0 0 0;
+}
+.viewBlockchainFirst {
+	border: solid 1px gray;
+	width: 54%;
+	margin: auto;
+	text-align: center;
+	padding: 65px 0px;
+}
+
+.addBlockchainFirst {
+	border: solid 1px gray;
+	width: 100%;
+	margin: auto;
+	text-align: center;
+	padding: 65px 0px;
+}
+
+.container_cust {
+	width: 81%;
+	margin: auto;
+}
+.container_cust p {
+	font-size: medium;
+}
+
+.propertyListTable .btn {
+	background-color: #ab9975;
+	border: 2px solid #ab9975;
+	color: #fff;
+	padding: 6px 12px;
+	border-radius: 5px;
+}

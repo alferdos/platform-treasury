@@ -1,0 +1,48 @@
+{
+	"name": "property-blockchain",
+	"version": "1.0.0",
+	"description": "property-blockchain",
+	"main": "index.js",
+	"scripts": {
+		"start": "node server.js",
+		"server": "nodemon server.js",
+		"frontend": "cd frontend && npm run start",
+		"server-install": "npm install",
+		"frontend-install": "cd frontend && npm install",
+		"install-all": "concurrently \"npm run server-install\" \"npm run frontend-install\"",
+		"dev": "concurrently \"npm run server\" \"npm run frontend\"",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [
+		"blockchain",
+		"project"
+	],
+	"author": "me",
+	"license": "ISC",
+	"dependencies": {
+		"bcrypt": "^5.0.1",
+		"big-number": "^2.0.0",
+		"concurrently": "^6.5.1",
+		"cookie-parser": "^1.4.5",
+		"cors": "^2.8.5",
+		"cryptr": "^6.0.2",
+		"dotenv": "^10.0.0",
+		"ethereumjs-tx": "^2.1.2",
+		"ethers": "^5.5.4",
+		"express": "^4.17.2",
+		"express-fileupload": "^1.2.1",
+		"fs": "^0.0.1-security",
+		"joi": "^17.5.0",
+		"joi-password-complexity": "^5.1.0",
+		"jsonwebtoken": "^8.5.1",
+		"moment": "^2.29.1",
+		"mongoose": "^6.1.2",
+		"multer": "^1.4.4",
+		"nodemon": "^2.0.15",
+		"path": "^0.12.7",
+		"react-highcharts": "^16.1.0",
+		"validator": "^13.7.0",
+		"web3": "^1.6.1"
+	},
+	"devDependencies": {}
+}

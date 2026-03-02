@@ -1,0 +1,435 @@
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { getDataAPI, postDataAPI } from "../../utils/API";
+import Modal from "@material-ui/core/Modal";
+import GlobalTypes from "../../redux/actions/GlobalTypes";
+import swal from "sweetalert";
+import ReactHighcharts from 'react-highcharts/ReactHighstock.src'
+//import priceData from './assets/btcdata.json'
+import moment from 'moment'
+
+//create property component to write all details from form.
+
+const TradeProperty = () => {
+    const dispatch = useDispatch();
+    const [data, setData] = useState("");
+    const [blockchain, setBlockchain] = useState("");
+    const [buytrade, setBuyTrade] = useState([]);
+    const [selltrade, setSellTrade] = useState([]);
+    const [marketdisable, setMarketDisable] = useState(false);
+    const [tradeError, setTradeError] = useState("");
+    const [transactions, setTransactions] = useState([]);
+    const [chartdata, setChartData] = useState([]);
+
+    const options = {style: 'currency', currency: 'USD'};
+    const numberFormat = new Intl.NumberFormat('en-US', options);
+    const configPrice = {
+        yAxis: [{
+            offset: 20,
+            labels: {
+                formatter: function () {
+                    return numberFormat.format(this.value) 
+                },
+                x: -15,
+                style: {
+                    "color": "#000", "position": "absolute"
+                },
+                align: 'left'
+            },
+        }],
+        tooltip: {
+            shared: true,
+            formatter: function () {
+                return numberFormat.format(this.y, 0) +  '</b><br/>' + moment(this.x).format('MMMM Do YYYY, h:mm')
+            }
+        },
+        plotOptions: {
+            series: {
+                //showInNavigator: true,
+                //gapSize: 6,
+            }
+        },
+        rangeSelector: {
+            selected: 1
+        },
+        title: {
+            text: `Stock Price`
+        },
+        chart: {
+            height: 600,
+        },
+        credits: {
+            enabled: false
+        },
+        legend: {
+            enabled: true
+        },
+        xAxis: {
+            type: 'date',
+        },
+        rangeSelector: {
+            buttons: [{
+                type: 'day',
+                count: 1,
+                text: '1d',
+            }, {
+                type: 'day',
+                count: 7,
+                text: '7d'
+            }, {
+                type: 'month',
+                count: 1,
+                text: '1m'
+            }, {
+                type: 'month',
+                count: 3,
+                text: '3m'
+            },
+            {
+                type: 'all',
+                text: 'All'
+            }],
+            selected: 4
+        },
+        series: [{
+            name: 'Price',
+            type: 'spline',
+            data: chartdata,
+            tooltip: {
+                valueDecimals: 2
+            },
+        }]
+    };
+
+    const { auth } = useSelector((state) => state);
+
+    async function getTrade() {
+        var hrefPath = window.location.href;
+        var id = hrefPath.split("/")[5];
+        var getProperty = await getDataAPI("/get_property/" + id);
+        var getBlockchain = await getDataAPI("/getPropBlockchainData/" + id);
+        var getBuyTradeData = await getDataAPI("/getPropTrade/" + id + "?action=buy");
+        var getSellTradeData = await getDataAPI("/getPropTrade/" + id + "?action=sell");
+        var getChartData = await getDataAPI("/getChartData/" + id);
+        if(auth.data){
+            var getLatestTransaction = await getDataAPI("/getPropTransaction/" + id +"?userId="+auth.data.user._id+"&isSubscription=false")
+            setTransactions(getLatestTransaction.data);
+        }
+        setData(getProperty.data);
+        setBlockchain(getBlockchain.data);
+        setBuyTrade(getBuyTradeData.data);
+        setSellTrade(getSellTradeData.data);
+        let chart=[];
+        (getChartData.data).map(function(d){
+            chart.push([
+                d.time,
+                d.price
+            ]);
+        })
+        setChartData(chart);
+        if(getBuyTradeData.data.length==0 && getSellTradeData.data.length==0){
+            setMarketDisable(true);
+        }
+    }
+    useEffect(() => {
+        //setInterval(() => getTrade(), 5000);
+        getTrade();
+    }, [auth]);
+
+    const marketTrade = async (e) => {
+        e.preventDefault();
+        const { propertyId, units, priceType, marketPrice, price, action } = e.target.elements;
+        let totalTokenSupply = document.querySelector(".totalTokenSupply").value;
+        if(parseInt(units.value)>parseInt(totalTokenSupply)){
+            swal("Error", "Supply should be less then or equal to total token supply!", "error");
+        }
+        else{
+            let details = {
+                propertyId: propertyId.value,
+                userId: (auth.data) ? auth.data.user._id : "",
+                units: units.value,
+                priceType: priceType.value,
+                marketPrice: marketPrice.value,
+                price: price.value,
+                action: action.value,
+            };
+            postDataAPI("trade", details).then(function (response) {
+                if (response.data.status == 0) {
+                    setTradeError(response.data.errors);
+                }
+                else if (response.data.status == -1) {
+                    getTrade()
+                    setTradeError(response.data.errors);
+                    swal("Partial Success", response.data.message, "warning");
+                }
+                else {
+                    getTrade();
+                    setTradeError(response.data.errors);
+                    swal("Success", response.data.message, "success");
+                }
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+        }
+    };
+
+    const BuySellClickHandler = (action) => {
+        document.querySelector("select[name='action']").value = action;
+        document.querySelector(".btnClick").click();
+    }
+    
+    return (
+        <div>
+            {data
+                ? data.map((property) => (
+                    <div className="main_content" key={property._id}>
+                        <section className="main_listing">
+                            <div className="container">
+                                <div className="inner_list">
+                                    <h3>{property.title}</h3>
+                                    <h3>
+                                        Address:<span>{property.address}</span>
+                                    </h3>
+                                    <div className="list_grd">
+                                        <div
+                                            id="carouselExampleControls"
+                                            className="carousel slide"
+                                            data-bs-ride="carousel">
+                                            <div className="carousel-inner">
+                                                {(property.imageName).map((imgName, key) => (
+                                                    <div key={`img${key}`} className={`carousel-item ${(key == 0) ? 'active' : ''}`}>
+                                                        <img src={`${imgName}`} />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <button
+                                                className="carousel-control-prev"
+                                                type="button"
+                                                data-bs-target="#carouselExampleControls"
+                                                data-bs-slide="prev">
+                                                <span
+                                                    className="carousel-control-prev-icon"
+                                                    aria-hidden="true"></span>
+                                                <span className="visually-hidden">Previous</span>
+                                            </button>
+                                            <button
+                                                className="carousel-control-next"
+                                                type="button"
+                                                data-bs-target="#carouselExampleControls"
+                                                data-bs-slide="next">
+                                                <span
+                                                    className="carousel-control-next-icon"
+                                                    aria-hidden="true"></span>
+                                                <span className="visually-hidden">Next</span>
+                                            </button>
+                                        </div>
+
+                                        <div className="lis_col">
+                                            <div className="tab_le upper_table">
+                                                <table className="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>QTY</th>
+                                                            <th>Bid</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {buytrade.length!=0 ? buytrade.map((b, i) => (
+                                                            <tr key={`buy${i}`}>
+                                                                <td>{b.units} units</td>
+                                                                <td>${b.price}</td>
+                                                            </tr>
+                                                        )) : <tr><td colSpan={2}>Order book is empty!.</td></tr>}
+                                                    </tbody>
+                                                </table>
+                                                <table className="table tab2">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Ask</th>
+                                                            <th>QTY</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {selltrade.length!=0 ? selltrade.map((s, i) => (
+                                                            <tr key={`sell${i}`}>
+                                                                <td>${s.price}</td>
+                                                                <td>{s.units} units</td>
+                                                            </tr>
+                                                        )) : <tr><td colSpan={2}>Order book is empty!.</td></tr>}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <h4>Latest Transactions</h4>
+                                            <div className="tab_le single_table">
+                                                <table className="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Price</th>
+                                                            <th>QTY</th>
+                                                            <th>DATE</th>
+                                                            <th>TIME</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {transactions.length === 0?
+                                                            <tr>
+                                                                <td colSpan={4}>No transactions to show.</td>
+                                                            </tr>
+                                                            :
+                                                            transactions.map((t, i) => {
+                                                                return <tr key={`tranx${i}`}>
+                                                                    <td>${t.price ? t.price : "23.00"}</td>
+                                                                    <td>{t.units} units</td>
+                                                                    <td>{t.createdAt.split("T").shift().replace(/-/g, "/")}</td>
+                                                                    <td>{t.createdAt.split("T")[1].substring(0, 5)}</td>
+                                                                </tr>
+                                                            })
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div className="token_row">
+                                                <h3>Unit Price: ${property.tokenPrice}</h3>
+                                                <input type="hidden" className="totalTokenSupply" value={property.totalTokenSupply}/>
+                                                <div className="btns">
+                                                    <button
+                                                        type="button"
+                                                        className="btn"
+                                                        onClick={() => BuySellClickHandler("buy")}>
+                                                        Buy
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="btn2"
+                                                        onClick={() => BuySellClickHandler("sell")}>
+                                                        Sell
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section>
+                            <div className="container">
+                                <form className="marketTrade" onSubmit={marketTrade.bind(this)}>
+                                    <input type="hidden" name="propertyId" value={`${blockchain ? blockchain[0].propertyId : ""}`} />
+                                    <input type="hidden" name="marketPrice" value="0" />
+                                    <div className="tocken_detail">
+                                        <div className="tocken_details">
+                                            <div className="tock_detail">
+                                                <input
+                                                    type="text"
+                                                    className="form-control"
+                                                    placeholder="Unit Name"
+                                                    value={blockchain ? blockchain[0].contractName : ""}
+                                                    required
+                                                />
+                                                <input
+                                                    type="text"
+                                                    className="form-control"
+                                                    placeholder="Unit Id"
+                                                    value={blockchain ? blockchain[0].symbol : ""}
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="tock_detail2">
+                                                <select className="form-select" name="action">
+                                                    <option value="buy">Buy</option>
+                                                    <option value="sell">Sell</option>
+                                                </select>
+                                                {tradeError?.action && <span className="error">{tradeError.action}</span>}
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    className="form-control"
+                                                    placeholder="Units"
+                                                    name="units"
+                                                />
+                                                {tradeError?.units && <span className="error">{tradeError.units}</span>}
+                                            </div>
+                                        </div>
+                                        <div className="tocken_price">
+                                            <h3>Price</h3>
+                                            <div className="radio_tok">
+                                                <div className="radio_in">
+                                                    <div>
+                                                        <label className="contain">
+                                                            {(marketdisable==false)?(
+                                                                <input type="radio" name="priceType" value="customPrice" />
+                                                            ):(
+                                                                <input type="radio" name="priceType" value="customPrice" checked/>
+                                                            )}
+                                                            <span className="checkmark"></span>
+                                                        </label>
+                                                        <input
+                                                            type="number"
+                                                            min="1"
+                                                            className="form-control"
+                                                            placeholder="Price"
+                                                            name="price"
+                                                        />
+                                                    </div>
+                                                    {tradeError?.price && <span className="error">{tradeError.price}</span>}
+                                                </div>
+                                                <div>
+                                                    <label className="contain">
+                                                        {(marketdisable==false)?(
+                                                            <input type="radio" name="priceType" value="marketPrice" checked/>
+                                                        ):(
+                                                            <input type="radio" name="priceType" value="marketPrice" disabled/>
+                                                        )}
+                                                        <span className="checkmark"></span>Market Price
+                                                    </label>
+                                                </div>
+                                                {tradeError?.priceType && <span className="error">{tradeError.priceType}</span>}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button className="btnClick">Submit</button>
+                                </form>
+                            </div>
+                        </section>
+
+                        <section>
+                            <div className="container">
+								<div className="highChartContainer">
+									{
+										(chartdata.length==0)?(<div className="blankMap"><span>Transaction is blank</span></div>):""
+									}
+									<ReactHighcharts config = {configPrice}></ReactHighcharts>
+								</div>
+                            </div>
+                        </section>
+
+                        <section className="Related">
+                            <div className="container">
+                                <div className="inner_related">
+                                    <h3>Related updates</h3>
+                                    <ul>
+                                        <li>
+                                            <a href="#">Link to news about property</a>
+                                        </li>
+                                        <li>
+                                            <a href="#">Link to news about property #2</a>
+                                        </li>
+                                        <li>
+                                            <a href="#">Link to news about property #3</a>
+                                        </li>
+                                        <li>
+                                            <a href="#">Link to news about property #4</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                )) : ""}
+        </div>
+    );
+};
+
+export default TradeProperty;

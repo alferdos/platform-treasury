@@ -1,0 +1,9 @@
+{
+  "apps": [
+    {
+      "name": "PropertyBlockchain2",
+      "script": "npm",
+      "args": "run dev"
+    }
+  ]
+}
