@@ -1,15 +1,12 @@
-FROM node:16-alpine
+FROM node:16
 
 WORKDIR /app
 
-# Install git for npm packages that need it
-RUN apk add --no-cache git
-
-# Copy package files
+# Copy backend package files
 COPY package*.json ./
 
-# Install backend dependencies with npm ci (more reliable than npm install)
-RUN npm ci --production || npm install --production
+# Install dependencies without optional packages
+RUN npm install --no-optional --force 2>&1 || npm install --force
 
 # Copy backend source
 COPY server.js ./
@@ -20,10 +17,9 @@ COPY config/ ./config/
 COPY validation/ ./validation/
 COPY propertyCtrl.js ./
 
-# Copy pre-built frontend (already in your repo)
+# Copy pre-built frontend
 COPY frontend/build ./frontend/build
 
-# Expose port
 EXPOSE 8080
 
 ENV NODE_ENV=production
