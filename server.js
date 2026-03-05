@@ -83,6 +83,6 @@ const port = process.env.PORT;
 app.listen(port, () => {
 	console.log(`listening port localhost : ${port}`);
 });
-// Trigger rebuild at Thu Mar  5 03:21:11 EST 2026
-// Trigger rebuild at Thu Mar  5 05:15:44 EST 2026
-// Trigger rebuild
+// Trigger rebuild - Force deployment at Wed Mar 05 2026 14:35:00 GMT+3
+// This comment forces Railway to rebuild the application
+// Deployment fix: Restructured Express routing to handle API routes correctly
