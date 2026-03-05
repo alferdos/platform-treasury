@@ -11,7 +11,7 @@ COPY frontend/public ./frontend/public
 RUN cd frontend && \
     rm -rf node_modules package-lock.json && \
     SKIP_PREFLIGHT_CHECK=true npm install --force && \
-    SKIP_PREFLIGHT_CHECK=true npm run build
+    NODE_OPTIONS=--openssl-legacy-provider SKIP_PREFLIGHT_CHECK=true npm run build
 
 # Copy backend package files
 COPY package*.json ./
