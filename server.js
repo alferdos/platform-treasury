@@ -77,7 +77,11 @@ if (process.env.NODE_ENV === "production") {
 	
 	// Catch-all route for SPA - serves index.html for all non-API routes
 	app.get("*", (req, res) => {
-		// Serve the React app for all routes except /api
+		// Don't serve index.html for /api routes - they should have been handled above
+		if (req.path.startsWith("/api")) {
+			return res.status(404).json({ error: "API endpoint not found", path: req.path });
+		}
+		// Serve the React app for all other routes
 		res.sendFile(path.join(__dirname, "frontend", "build", "index.html"));
 	});
 }
