@@ -28,9 +28,13 @@ COPY Controller/ ./Controller/
 COPY config/ ./config/
 COPY validation/ ./validation/
 COPY propertyCtrl.js ./
+COPY .env ./
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=8080
 
 EXPOSE 8080
 
-ENV NODE_ENV=production
-
+# Start the server
 CMD ["node", "server.js"]
