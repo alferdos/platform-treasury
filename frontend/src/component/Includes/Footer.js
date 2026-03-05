@@ -8,7 +8,7 @@ const Footer = () => (
 		<div className="container">
 			<div className="inner_footer">
 			<Link to="/">
-				<img src="/theme/images/logo_white.png" style={{maxWidth: '150px', height: 'auto'}} />
+				<img src="/theme/images/logo_white.png" style={{maxWidth: '150px', height: 'auto', width: 'auto'}} />
 			</Link>
 				<div className="footer_menu">
 					<div>
