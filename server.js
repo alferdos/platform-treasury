@@ -43,7 +43,12 @@ mongoose.connect(
 //listener
 if (process.env.NODE_ENV === "production") {
 	app.use(express.static("frontend/build"));
+	// Catch-all route for SPA - but NOT for /api routes
 	app.get("*", (req, res) => {
+		// Don't serve index.html for API routes
+		if (req.path.startsWith("/api")) {
+			return res.status(404).json({ error: "API route not found" });
+		}
 		res.sendFile(path.join(__dirname, "frontend", "build", "index.html"));
 	});
 }
