@@ -1,0 +1,6 @@
+/* Footer logo sizing */
+.inner_footer img {
+  max-width: 150px !important;
+  height: auto !important;
+  width: auto !important;
+}
