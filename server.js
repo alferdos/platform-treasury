@@ -23,7 +23,7 @@ app.get("/health", (req, res) => {
 	res.json({ status: "OK", timestamp: new Date().toISOString() });
 });
 
-//routes
+// API Routes - MUST be registered before static file serving
 app.use("/api", require("./Routes/userRoutes"));
 app.use("/api", require("./Routes/propertyRoutes"));
 app.use("/api", require("./Routes/deployRoutes"));
@@ -31,6 +31,11 @@ app.use("/api", require("./Routes/requestFundRoutes"));
 app.use("/api", require("./Routes/transactionRoutes"));
 app.use("/api", require("./Routes/tradeRoutes"));
 app.use("/api", require("./Routes/adminRoutes"));
+
+// 404 handler for unmatched API routes
+app.use("/api", (req, res) => {
+	res.status(404).json({ error: "API endpoint not found", path: req.path });
+});
 
 mongoose.connect(
 	process.env.CONNECTION_URL,
@@ -45,15 +50,17 @@ mongoose.connect(
 		console.log("connected to mongodb");
 	},
 );
-//listener
+//listener - Serve frontend in production
 if (process.env.NODE_ENV === "production") {
-	app.use(express.static("frontend/build"));
-	// Catch-all route for SPA - but NOT for /api routes
+	// Serve static files from frontend/build
+	app.use(express.static(path.join(__dirname, "frontend", "build"), {
+		maxAge: "1d",
+		etag: false
+	}));
+	
+	// Catch-all route for SPA - serves index.html for all non-API routes
 	app.get("*", (req, res) => {
-		// Don't serve index.html for API routes
-		if (req.path.startsWith("/api")) {
-			return res.status(404).json({ error: "API route not found" });
-		}
+		// Serve the React app for all routes except /api
 		res.sendFile(path.join(__dirname, "frontend", "build", "index.html"));
 	});
 }
