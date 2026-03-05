@@ -25,7 +25,11 @@ app.get("/health", (req, res) => {
 
 // Version endpoint for cache busting
 app.get("/version", (req, res) => {
-	res.json({ version: "1.0.1", timestamp: new Date().toISOString() });
+	res.json({ 
+		version: "2.0.0-DEPLOYMENT-FIX",
+		timestamp: new Date().toISOString(),
+		message: "API routing fix deployed successfully"
+	});
 });
 
 // Disable caching for API routes
