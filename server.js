@@ -20,7 +20,20 @@ app.use(fileUpload());
 
 // Health check endpoint
 app.get("/health", (req, res) => {
-	res.json({ status: "OK", timestamp: new Date().toISOString() });
+	res.json({ status: "OK", timestamp: new Date().toISOString(), version: "1.0.1" });
+});
+
+// Version endpoint for cache busting
+app.get("/version", (req, res) => {
+	res.json({ version: "1.0.1", timestamp: new Date().toISOString() });
+});
+
+// Disable caching for API routes
+app.use("/api", (req, res, next) => {
+	res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+	res.set("Pragma", "no-cache");
+	res.set("Expires", "0");
+	next();
 });
 
 // API Routes - MUST be registered before static file serving
