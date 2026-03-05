@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/static/css/main.1e590a67.chunk.css",
-    "main.js": "/static/js/main.859c0e85.chunk.js",
-    "main.js.map": "/static/js/main.859c0e85.chunk.js.map",
+    "main.js": "/static/js/main.7dd96778.chunk.js",
+    "main.js.map": "/static/js/main.7dd96778.chunk.js.map",
     "runtime-main.js": "/static/js/runtime-main.725b505d.js",
     "runtime-main.js.map": "/static/js/runtime-main.725b505d.js.map",
     "static/css/2.0a00179b.chunk.css": "/static/css/2.0a00179b.chunk.css",
@@ -15,15 +15,15 @@
     "static/css/main.1e590a67.chunk.css.map": "/static/css/main.1e590a67.chunk.css.map",
     "static/js/2.c7e90df9.chunk.js.LICENSE.txt": "/static/js/2.c7e90df9.chunk.js.LICENSE.txt",
     "static/media/index.css": "/static/media/Adrianna-Regular.eb963de7.woff2",
-    "static/media/Logo.890c879c.png": "/static/media/Logo.890c879c.png",
+    "static/media/Logo.c01fc667.png": "/static/media/Logo.c01fc667.png",
     "static/media/loading.2115b6bd.gif": "/static/media/loading.2115b6bd.gif",
-    "static/media/logo_white.890c879c.png": "/static/media/logo_white.890c879c.png"
+    "static/media/logo_white.c01fc667.png": "/static/media/logo_white.c01fc667.png"
   },
   "entrypoints": [
     "static/js/runtime-main.725b505d.js",
     "static/css/2.0a00179b.chunk.css",
     "static/js/2.c7e90df9.chunk.js",
     "static/css/main.1e590a67.chunk.css",
-    "static/js/main.859c0e85.chunk.js"
+    "static/js/main.7dd96778.chunk.js"
   ]
 }
