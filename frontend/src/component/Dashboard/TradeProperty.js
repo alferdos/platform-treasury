@@ -21,12 +21,16 @@ const TradeProperty = () => {
     const [tradeError, setTradeError] = useState("");
     const [transactions, setTransactions] = useState([]);
     const [chartdata, setChartData] = useState([]);
+    const [volumedata, setVolumeData] = useState([]);
 
     const options = {style: 'currency', currency: 'SAR'};
     const numberFormat = new Intl.NumberFormat('en-SA', options);
+    // Last traded price from transactions
+    const lastPrice = transactions.length > 0 ? transactions[0].price : null;
     const configPrice = {
         yAxis: [{
             offset: 20,
+            height: '70%',
             labels: {
                 formatter: function () {
                     return numberFormat.format(this.value) 
@@ -37,36 +41,43 @@ const TradeProperty = () => {
                 },
                 align: 'left'
             },
+        }, {
+            // Volume axis
+            top: '72%',
+            height: '26%',
+            offset: 0,
+            labels: {
+                formatter: function () {
+                    return this.value + ' units';
+                },
+                align: 'left',
+                x: 5,
+                style: { color: '#888' }
+            },
+            title: { text: 'Volume', style: { color: '#888' } },
+            gridLineWidth: 0,
         }],
         tooltip: {
             shared: true,
             formatter: function () {
-                return numberFormat.format(this.y, 0) +  '</b><br/>' + moment(this.x).format('MMMM Do YYYY, h:mm')
+                let s = '<b>' + moment(this.x).format('MMM Do YYYY, h:mm') + '</b>';
+                this.points && this.points.forEach(function(point) {
+                    if (point.series.name === 'Price') {
+                        s += '<br/>Price: ' + numberFormat.format(point.y);
+                    } else if (point.series.name === 'Volume') {
+                        s += '<br/>Volume: ' + point.y + ' units';
+                    }
+                });
+                return s;
             }
         },
         plotOptions: {
+            column: {
+                borderRadius: 2,
+            },
             series: {
                 //showInNavigator: true,
-                //gapSize: 6,
             }
-        },
-        rangeSelector: {
-            selected: 1
-        },
-        title: {
-            text: `Stock Price`
-        },
-        chart: {
-            height: 600,
-        },
-        credits: {
-            enabled: false
-        },
-        legend: {
-            enabled: true
-        },
-        xAxis: {
-            type: 'date',
         },
         rangeSelector: {
             buttons: [{
@@ -85,19 +96,45 @@ const TradeProperty = () => {
                 type: 'month',
                 count: 3,
                 text: '3m'
-            },
-            {
+            }, {
                 type: 'all',
                 text: 'All'
             }],
             selected: 4
         },
+        title: {
+            text: lastPrice ? `Last Price: SAR ${lastPrice}` : 'Price Chart'
+        },
+        chart: {
+            height: 600,
+        },
+        credits: {
+            enabled: false
+        },
+        legend: {
+            enabled: true
+        },
+        xAxis: {
+            type: 'datetime',
+        },
         series: [{
             name: 'Price',
             type: 'spline',
             data: chartdata,
+            yAxis: 0,
             tooltip: {
                 valueDecimals: 2
+            },
+            color: '#8B7355',
+            lineWidth: 2,
+        }, {
+            name: 'Volume',
+            type: 'column',
+            data: volumedata,
+            yAxis: 1,
+            color: 'rgba(139, 115, 85, 0.5)',
+            tooltip: {
+                valueSuffix: ' units'
             },
         }]
     };
@@ -112,22 +149,32 @@ const TradeProperty = () => {
         var getBuyTradeData = await getDataAPI("/getPropTrade/" + id + "?action=buy");
         var getSellTradeData = await getDataAPI("/getPropTrade/" + id + "?action=sell");
         var getChartData = await getDataAPI("/getChartData/" + id);
-        if(auth.data){
-            var getLatestTransaction = await getDataAPI("/getPropTransaction/" + id +"?userId="+auth.data.user._id+"&isSubscription=false")
-            setTransactions(getLatestTransaction.data);
-        }
+        // Fetch all market transactions for this property (not filtered by user)
+        var getLatestTransaction = await getDataAPI("/getPropTransaction/" + id);
+        setTransactions(getLatestTransaction.data);
         setData(Array.isArray(getProperty.data) ? getProperty.data : (getProperty.data ? [getProperty.data] : []));
         setBlockchain(Array.isArray(getBlockchain.data) ? getBlockchain.data : (getBlockchain.data ? [getBlockchain.data] : []));
         setBuyTrade(getBuyTradeData.data);
         setSellTrade(getSellTradeData.data);
         let chart=[];
+        let volume=[];
         (getChartData.data).map(function(d){
             chart.push([
                 d.time,
                 d.price
             ]);
-        })
+        });
+        // Build volume data from transactions (group by day)
+        const volMap = {};
+        (getLatestTransaction.data || []).forEach(function(t) {
+            const dayTs = new Date(t.createdAt).setHours(0,0,0,0);
+            volMap[dayTs] = (volMap[dayTs] || 0) + (t.units || 0);
+        });
+        Object.keys(volMap).sort().forEach(function(ts) {
+            volume.push([parseInt(ts), volMap[ts]]);
+        });
         setChartData(chart);
+        setVolumeData(volume);
         if(getBuyTradeData.data.length==0 && getSellTradeData.data.length==0){
             setMarketDisable(true);
         }
