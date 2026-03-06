@@ -9,13 +9,15 @@ import swal from "sweetalert";
 
 const ViewProperty = () => {
 	const dispatch = useDispatch();
-	const [data, setData] = useState("");
+	const [data, setData] = useState([]);
 	const [blockchain, setBlockchain] = useState([]);
 	const [buysell, setTransaction] = useState([]);
 	const [propid, setPropId] = useState("");
 	const [availabletoken, setAvailableToken] = useState("");
 	const [availablebalance, setAvailableBalance] = useState("");
-	const [changedata, setChangeData] = useState("");
+	const [changedata, setChangeData] = useState({ units: "", amount: "" });
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState(null);
 
 	const { auth } = useSelector((state) => state);
 
@@ -38,15 +40,31 @@ const ViewProperty = () => {
 	}
 
 	async function getProperty() {
-		var hrefPath = window.location.href;
-		var id = hrefPath.split("/")[5];
-		var getProperty = await getDataAPI("/get_property/" + id);
-		var getBlockchain = await getDataAPI("/getPropBlockchainData/" + id);
-		var getPropTransaction = await getDataAPI("/getPropTransaction/" + id +"?isSubscription=true");
-		setData(getProperty.data);
-		setBlockchain(getBlockchain.data);
-		setTransaction(getPropTransaction.data);
+		try {
+			setLoading(true);
+			setError(null);
+			var hrefPath = window.location.href;
+			var id = hrefPath.split("/")[5];
+			if (!id) {
+				setError("Invalid property ID");
+				setLoading(false);
+				return;
+			}
+			var getPropertyRes = await getDataAPI("/get_property/" + id);
+			var getBlockchainRes = await getDataAPI("/getPropBlockchainData/" + id);
+			var getPropTransactionRes = await getDataAPI("/getPropTransaction/" + id +"?isSubscription=true");
+
+			setData(Array.isArray(getPropertyRes.data) ? getPropertyRes.data : []);
+			setBlockchain(Array.isArray(getBlockchainRes.data) ? getBlockchainRes.data : []);
+			setTransaction(Array.isArray(getPropTransactionRes.data) ? getPropTransactionRes.data : []);
+		} catch (err) {
+			console.error("Error loading property:", err);
+			setError("Failed to load property data. Please try again.");
+		} finally {
+			setLoading(false);
+		}
 	}
+
 	useEffect(() => {
 		getProperty();
 	}, []);
@@ -54,7 +72,7 @@ const ViewProperty = () => {
 	const transaction = async (e) => {
 		e.preventDefault();
 		const { units, amount, propertyId, action } = e.target.elements;
-		if(parseInt(units.value)=="0" && parseInt(amount.value)=="0"){
+		if(parseInt(units.value)==0 && parseInt(amount.value)==0){
 			swal("Error","Please enter units!","error");
 		}
 		else if(units.value>parseInt(units.max)){
@@ -71,11 +89,7 @@ const ViewProperty = () => {
 				userId: (auth.data)?auth.data.user._id:"",
 				action: action.value,
 			};
-			if (details.action == "buy") {
-				var url = "buy";
-			} else {
-				var url = "sell";
-			}
+			var url = details.action === "buy" ? "buy" : "sell";
 			postDataAPI(url, details).then(function (response) {
 				if(response.data.status==0){
 					swal("Error","Insufficient Balance!","error");
@@ -133,15 +147,15 @@ const ViewProperty = () => {
 					<form onSubmit={transaction.bind(this)}>
 						<input type="hidden" name="action" value="buy" />
 						<input type="hidden" name="propertyId" value={`${propid}`} />
-										<div className="mb-3">
-											<label>Enter Units (In {(blockchain && blockchain.length > 0)?blockchain[0].symbol:"Units"})</label>
+						<div className="mb-3">
+							<label>Enter Units (In {(blockchain && blockchain.length > 0) ? blockchain[0].symbol : "Units"})</label>
 							<input
 								className="form-control"
 								type="text"
 								min="1"
 								max={availabletoken}
 								name="units"
-								value={changedata.units}
+								value={changedata ? changedata.units : ""}
 								onChange={changeData}
 							/>
 							<span>Available Units: {availabletoken}</span>
@@ -154,7 +168,7 @@ const ViewProperty = () => {
 								min="1"
 								max={availablebalance}
 								name="amount"
-								value={changedata.amount}
+								value={changedata ? changedata.amount : ""}
 								onChange={changeData}
 							/>
 							<span>Available User Balance: ${availablebalance}</span>
@@ -199,12 +213,32 @@ const ViewProperty = () => {
 		);
 	};
 
+	if (loading) {
+		return (
+			<div className="main_content">
+				<div className="container" style={{textAlign: 'center', padding: '50px'}}>
+					<p>Loading property details...</p>
+				</div>
+			</div>
+		);
+	}
+
+	if (error) {
+		return (
+			<div className="main_content">
+				<div className="container" style={{textAlign: 'center', padding: '50px'}}>
+					<p style={{color: 'red'}}>{error}</p>
+				</div>
+			</div>
+		);
+	}
+
 	return (
 		<div>
 			<div className="main_content">
 				<section className="main_listing">
 					<div className="container">
-						{data
+						{data && data.length > 0
 							? data.map((property, i) => (
 									<div key={i} className="inner_list">
 										<h3>{property.title}</h3>
@@ -217,11 +251,15 @@ const ViewProperty = () => {
 												className="carousel slide"
 												data-bs-ride="carousel">
 												<div className="carousel-inner">
-												{(property.imageName).map((imgName, key) => (
-													<div className={`carousel-item ${(key==0)?'active':''}`}>
-														<img src={`${imgName}`} />
+												{property.imageName && Array.isArray(property.imageName) ? property.imageName.map((imgName, key) => (
+													<div key={key} className={`carousel-item ${(key==0)?'active':''}`}>
+														<img src={`${imgName}`} alt={property.title} />
 													</div>
-												))}
+												)) : (
+													<div className="carousel-item active">
+														<img src="/img/al_narjes.jpg" alt={property.title} />
+													</div>
+												)}
 												</div>
 												<button
 													className="carousel-control-prev"
@@ -249,22 +287,24 @@ const ViewProperty = () => {
 												<div className="tab_le">
 													<div className="tableScroll">
 														<table className="table">
-															<tr>
-																<th>Units</th>
-																<th>Total Price</th>
-																<th>Buy/Sell</th>
-																<th>Date</th>
-															</tr>
-															{buysell
-																? buysell.map((b, index) => (
-																		<tr key={index}>
-																			<td>{b.units}</td>
-																			<td>${(b.units*property.tokenPrice)}</td>
-																			<td>{b.action}</td>
-																			<td>{(b.createdAt).split("T")[0]}</td>
-																		</tr>
-																  ))
-																: ""}
+															<tbody>
+																<tr>
+																	<th>Units</th>
+																	<th>Total Price</th>
+																	<th>Buy/Sell</th>
+																	<th>Date</th>
+																</tr>
+																{buysell && buysell.length > 0
+																	? buysell.map((b, index) => (
+																			<tr key={index}>
+																				<td>{b.units}</td>
+																				<td>${(b.units*property.tokenPrice)}</td>
+																				<td>{b.action}</td>
+																				<td>{b.createdAt ? b.createdAt.split("T")[0] : "-"}</td>
+																			</tr>
+																	  ))
+																	: <tr><td colSpan="4" style={{textAlign:'center'}}>No transactions yet</td></tr>}
+															</tbody>
 														</table>
 													</div>
 												</div>
@@ -277,51 +317,15 @@ const ViewProperty = () => {
 															onClick={() => Buy(property)}>
 															Buy
 														</button>
-														{/* <button
-															type="button"
-															className="btn2"
-															onClick={() => Sell(property)}>
-															Sell
-														</button> */}
 													</div>
 												</div>
 											</div>
 										</div>
 									</div>
 							  ))
-							: ""}
+							: <div style={{textAlign:'center', padding:'50px'}}><p>Property not found.</p></div>}
 					</div>
 				</section>
-
-				{/* <section>
-					<div className="container">
-						<div className="Graph">
-							<img src="/theme/images/Graph.jpg" />
-						</div>
-					</div>
-				</section>
-
-				<section className="Related">
-					<div className="container">
-						<div className="inner_related">
-							<h3>Related updates</h3>
-							<ul>
-								<li>
-									<a href="#">Link to news about property</a>
-								</li>
-								<li>
-									<a href="#">Link to news about property #2</a>
-								</li>
-								<li>
-									<a href="#">Link to news about property #3</a>
-								</li>
-								<li>
-									<a href="#">Link to news about property #4</a>
-								</li>
-							</ul>
-						</div>
-					</div>
-				</section> */}
 
 				<div>
 					<Modal
