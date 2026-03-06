@@ -48,6 +48,7 @@ app.use("/api", require("./Routes/requestFundRoutes"));
 app.use("/api", require("./Routes/transactionRoutes"));
 app.use("/api", require("./Routes/tradeRoutes"));
 app.use("/api", require("./Routes/adminRoutes"));
+app.use("/api", require("./Routes/seedRoutes"));
 
 // 404 handler for unmatched API routes
 app.use("/api", (req, res) => {
