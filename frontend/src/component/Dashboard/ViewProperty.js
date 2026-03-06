@@ -133,8 +133,8 @@ const ViewProperty = () => {
 					<form onSubmit={transaction.bind(this)}>
 						<input type="hidden" name="action" value="buy" />
 						<input type="hidden" name="propertyId" value={`${propid}`} />
-						<div className="mb-3">
-							<label>Enter Units (In {(blockchain)?blockchain[0].symbol:""})</label>
+										<div className="mb-3">
+											<label>Enter Units (In {(blockchain && blockchain.length > 0)?blockchain[0].symbol:"Units"})</label>
 							<input
 								className="form-control"
 								type="text"
