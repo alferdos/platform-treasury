@@ -90,7 +90,7 @@ const Home = () => {
 										<Link
 											to={(header=="guest")?`/login`:(header=="dashboard")?`/dashboard/viewproperty/${property._id}`:`/admin/viewproperty/${property._id}`}
 													className="btn">
-													Buy
+																Subscribe
 												</Link>
 											</div>
 											<div className="bar">

@@ -231,7 +231,7 @@ const Transactions = () => {
 										transaction?transaction.map((t, key) => (
 											<tr className={(key%2==0)?"red":""} key={key}>
 												<td style={{textAlign:'left'}}><img src={`/theme/images/${(t.action=='buy')?"arr_btn1.png":"arr_btn.png"}`}/></td>
-												<td valign="middle">{(t.action=='buy')?"Buy":"Sell"} {t.propertyId.title}</td>
+												<td valign="middle">{(t.action=='buy')?"Subscribe":"Sell"} {t.propertyId.title}</td>
 												<td valign="middle">{t.units} Units ({(t.isSubscription==true)?"Fleet":"Trade"})</td>
 												<td valign="middle">{(t.createdAt).split("T")[0]}</td>
 										<td valign="middle" style={{textAlign:'right'}}><RiyalSymbol size="0.85em" />{t.price*t.units}</td>
@@ -317,7 +317,7 @@ const Transactions = () => {
 												(key<5)?(
 													<tr class={(key%2==0)?"red":""}>
 														<td style={{textAlign:'left'}}><img src={`/theme/images/${(t.action=='buy')?"arr_btn1.png":"arr_btn.png"}`}/></td>
-														<td valign="middle">{(t.action=='buy')?"Buy":"Sell"} {t.propertyId.title}</td>
+														<td valign="middle">{(t.action=='buy')?"Subscribe":"Sell"} {t.propertyId.title}</td>
 														<td valign="middle">{t.units} Units ({(t.isSubscription==true)?"Fleet":"Trade"})</td>
 														<td valign="middle">{(t.createdAt).split("T")[0]}</td>
 										<td valign="middle" style={{textAlign:'right'}}><RiyalSymbol size="0.85em" />{t.price*t.units}</td>

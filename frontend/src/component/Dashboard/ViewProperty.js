@@ -138,7 +138,7 @@ const ViewProperty = () => {
 			<div className="paper">
 				<div className="paper-head">
 					<h2 className="paper_h2" id="simple-modal-title">
-						Buy Unit
+											Subscribe
 					</h2>
 					<span onClick={handleClose}>
 						<i className="fa fa-times" aria-hidden="true"></i>
@@ -174,7 +174,7 @@ const ViewProperty = () => {
 							/>
 													<span>Available User Balance: <RiyalSymbol size="0.85em" />{availablebalance}</span>
 						</div>
-						<button className="btn btn-default">Buy</button>
+													<button className="btn btn-default">Subscribe</button>
 					</form>
 				</div>
 			</div>
@@ -316,8 +316,8 @@ const ViewProperty = () => {
 															type="button"
 															className="btn"
 															onClick={() => Buy(property)}>
-															Buy
-														</button>
+																											Subscribe
+																										</button>
 													</div>
 												</div>
 											</div>

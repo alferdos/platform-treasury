@@ -302,7 +302,7 @@ const TradeProperty = () => {
                                                         type="button"
                                                         className="btn"
                                                         onClick={() => BuySellClickHandler("buy")}>
-                                                        Buy
+                                                        Subscribe
                                                     </button>
                                                     <button
                                                         type="button"
@@ -343,7 +343,7 @@ const TradeProperty = () => {
                                             </div>
                                             <div className="tock_detail2">
                                                 <select className="form-select" name="action">
-                                                    <option value="buy">Buy</option>
+                                                    <option value="buy">Subscribe</option>
                                                     <option value="sell">Sell</option>
                                                 </select>
                                                 {tradeError?.action && <span className="error">{tradeError.action}</span>}
