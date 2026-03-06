@@ -224,11 +224,11 @@ const TradeProperty = () => {
 
     const BuySellClickHandler = (action) => {
         document.querySelector("select[name='action']").value = action;
-        document.querySelector(".btnClick").click();
-        // Scroll the order form into view smoothly
+        // Scroll to the order form with a fixed offset so it lands at the top of the viewport
         const form = document.querySelector(".marketTrade");
         if (form) {
-            form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            const y = form.getBoundingClientRect().top + window.pageYOffset - 80;
+            window.scrollTo({ top: y, behavior: 'smooth' });
         }
     }
     
@@ -452,7 +452,24 @@ const TradeProperty = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    <button className="btnClick">Submit</button>
+                                    <button
+                                        type="submit"
+                                        className="btnClick place-order-btn"
+                                        style={{
+                                            display: 'block',
+                                            width: '100%',
+                                            padding: '14px 24px',
+                                            marginTop: '20px',
+                                            background: '#8B7355',
+                                            color: '#fff',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            fontSize: '16px',
+                                            fontWeight: '700',
+                                            letterSpacing: '0.5px',
+                                            cursor: 'pointer',
+                                        }}
+                                    >Place Order</button>
                                 </form>
                             </div>
                         </section>
