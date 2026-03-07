@@ -115,8 +115,8 @@ const EditProperty = () => {
 						{blockchaindata ? (
 							<div className="viewBlockchainFirst">
 								<a
-									// href={`${VIEW_CONTRACT}tx/${blockchaindata.transactionHash}`}
-									href={`${VIEW_CONTRACT}token/${blockchaindata.transactionHash}`}
+								// href={`${VIEW_CONTRACT}tx/${blockchaindata.transactionHash}`}
+								href={`${VIEW_CONTRACT}token/${blockchaindata.contractAddress || blockchaindata.transactionHash}`}
 									target="_blank"
 									rel="noreferrer"
 									className="crt-ico">
