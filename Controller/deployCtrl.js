@@ -11,10 +11,11 @@ const privKey = process.env.PRIVATE_KEY;
 const rpcUrl = process.env.BSC_NET;
 
 // ─── Mock Deployment Helper ───────────────────────────────────────────────────
-// When FROM_ADDRESS / PRIVATE_KEY / BSC_NET are not set (dev / staging), the
-// controller falls back to a deterministic mock that generates realistic-looking
-// BSC TestNet addresses and tx hashes without spending real BNB gas.
-const isMockMode = !address || !privKey || !rpcUrl;
+// When FROM_ADDRESS / PRIVATE_KEY / BSC_NET are not set (dev / staging), OR when
+// MOCK_DEPLOY=true is explicitly set, the controller falls back to a deterministic
+// mock that generates realistic-looking BSC TestNet addresses and tx hashes
+// without spending real BNB gas.
+const isMockMode = process.env.MOCK_DEPLOY === 'true' || !address || !privKey || !rpcUrl;
 
 function generateMockHex(length) {
 	const chars = '0123456789abcdef';
