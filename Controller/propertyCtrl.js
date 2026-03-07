@@ -1,5 +1,15 @@
 const property = require("../Model/propertyModel");
 const validateProperty = require("../validation/Property");
+const cloudinary = require('cloudinary').v2;
+
+// Configure Cloudinary from env vars
+if (process.env.CLOUDINARY_CLOUD_NAME) {
+    cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET,
+    });
+}
 
 const prepareFileName = file => {
     let name = file.name.split(/[ \.]/g)
@@ -7,6 +17,18 @@ const prepareFileName = file => {
     name = name.join("-")
     return Date.now() + "." + name.substring(0, 10) + "." + extension
 }
+
+const uploadToCloudinary = (file) => {
+    return new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+            { folder: 'treasury-properties', resource_type: 'image' },
+            (error, result) => {
+                if (error) reject(error);
+                else resolve(result.secure_url);
+            }
+        ).end(file.data);
+    });
+};
 
 const propertyCtrl = {
 	//Function to create ico property.
@@ -61,18 +83,43 @@ const propertyCtrl = {
             const images = req.files["images"];
             let imagename = [];
 
-            // currently, files are stored in frontend/public. Don't forget to change it to frontend/build
-            if (Array.isArray(images)) {
-                imagename = images.map(saveImage)
+            if (process.env.CLOUDINARY_CLOUD_NAME) {
+                // Use Cloudinary for persistent storage
+                if (Array.isArray(images)) {
+                    imagename = await Promise.all(images.map(uploadToCloudinary));
+                } else {
+                    imagename = [await uploadToCloudinary(images)];
+                }
             } else {
-                imagename = saveImage(images)
+                // Fallback: store locally (not persistent on Railway)
+                if (Array.isArray(images)) {
+                    imagename = images.map(saveImage);
+                } else {
+                    imagename = saveImage(images);
+                }
             }
+
             const deed = req.files.deed;
-            const deedname = prepareFileName(deed);
-            deed.mv("./frontend/public/deed/" + deedname);
+            let deed_url;
+            if (process.env.CLOUDINARY_CLOUD_NAME) {
+                deed_url = await new Promise((resolve, reject) => {
+                    cloudinary.uploader.upload_stream(
+                        { folder: 'treasury-deeds', resource_type: 'raw' },
+                        (error, result) => {
+                            if (error) reject(error);
+                            else resolve(result.secure_url);
+                        }
+                    ).end(deed.data);
+                });
+            } else {
+                const deedname = prepareFileName(deed);
+                deed.mv("./frontend/public/deed/" + deedname);
+                deed_url = `/deed/${deedname}`;
+            }
+
             res.json({ 
                 image_url: imagename,
-                deed_url: `/deed/${deedname}`,
+                deed_url,
             });
         } catch (err) {
             return res.status(500).json({ msg: err.message });

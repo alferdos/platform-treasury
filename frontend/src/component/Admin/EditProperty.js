@@ -13,6 +13,7 @@ const EditProperty = () => {
 	const dispatch = useDispatch();
 	const history = useHistory();
 	const [blockchaindata, setBlockchainData] = useState("");
+	const blockchainFetched = React.useRef(false);
 	const { property, ico } = useSelector((state) => state);
 	if (property.data) {
 		var response = property.data;
@@ -91,12 +92,29 @@ const EditProperty = () => {
 			await getDataAPI("/getPropBlockchainData/" + prop._id).then(function(blockchainData){
 				blockchainData=blockchainData.data[0];
 				setBlockchainData(blockchainData);
+				if(blockchainData) {
+					// Auto-populate contract address from blockchain record
+					const autoContractAddress = blockchainData.contractAddress || '';
+					// Auto-calculate unit price: estimatedValue * ownership% / totalTokenSupply
+					const estValue = prop.propertyEstimatedValue || 0;
+					const ownershipPct = prop.percentageOfOwnership || 100;
+					const supply = blockchainData.totalTokenSupply || prop.totalTokenSupply || 1;
+					const autoUnitPrice = supply > 0 ? Math.round((estValue * ownershipPct / 100) / supply) : 0;
+					setPropertyData(prev => ({
+						...prev,
+						contract_address: prev.contract_address || autoContractAddress,
+						tokenPrice: prev.tokenPrice || autoUnitPrice,
+					}));
+				}
 			});
 		}
 	}
 	useEffect(() => {
-		getBlockchain(propertyData);
-	}, [propertyData]);
+		if(propertyData._id && !blockchainFetched.current) {
+			blockchainFetched.current = true;
+			getBlockchain(propertyData);
+		}
+	}, [propertyData._id]);
 
 	return (
 		<div className="main_content">
@@ -237,11 +255,18 @@ const EditProperty = () => {
 									<div className="mb-3">
 										<label className="form-label">Pictures</label>
 										<div className="field" align="left">
-											<div className="edit-image-upload">
-											{imageName.map((img) => (
-												<img src={`${img}`}/>
-											))}
-											</div>
+						<div className="edit-image-upload">
+						{imageName.map((img, idx) => (
+							<img
+								key={idx}
+								src={`${img}`}
+								alt="Property"
+								style={{maxWidth:'200px', maxHeight:'150px', objectFit:'cover', borderRadius:'8px', border:'1px solid #ddd'}}
+								onError={(e) => { e.target.style.display='none'; }}
+							/>
+						))}
+						{imageName.length === 0 && <span style={{color:'#999',fontSize:'0.85em'}}>No image uploaded</span>}
+						</div>
 										</div>
 									</div>
 									<div className="mb-3">
