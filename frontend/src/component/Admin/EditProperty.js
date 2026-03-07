@@ -113,15 +113,53 @@ const EditProperty = () => {
 					<div className="tab-content" id="myTabContent">
 						<div className="tab-pane fade show active" id="create" role="tabpanel" aria-labelledby="create-tab">
 						{blockchaindata ? (
-							<div className="viewBlockchainFirst">
-								<a
-								// href={`${VIEW_CONTRACT}tx/${blockchaindata.transactionHash}`}
-								href={`${VIEW_CONTRACT}token/${blockchaindata.contractAddress || blockchaindata.transactionHash}`}
-									target="_blank"
-									rel="noreferrer"
-									className="crt-ico">
-									View Contract on BSC
-								</a>
+							<div className="tokenInfoCard">
+								<div className="tokenInfoHeader">
+									<span className="tokenBadge">{blockchaindata.mock ? "MOCK" : "LIVE"}</span>
+									<h3>{blockchaindata.contractName} <span className="tokenSymbol">({blockchaindata.symbol})</span></h3>
+								</div>
+								<div className="tokenInfoGrid">
+									<div className="tokenInfoRow">
+										<span className="tokenInfoLabel">Token ID / Contract Address</span>
+										<span className="tokenInfoValue tokenHash">
+											<a href={`${VIEW_CONTRACT}token/${blockchaindata.contractAddress}`} target="_blank" rel="noreferrer">
+												{blockchaindata.contractAddress}
+											</a>
+										</span>
+									</div>
+									<div className="tokenInfoRow">
+										<span className="tokenInfoLabel">Transaction Hash</span>
+										<span className="tokenInfoValue tokenHash">
+											<a href={`${VIEW_CONTRACT}tx/${blockchaindata.transactionHash}`} target="_blank" rel="noreferrer">
+												{blockchaindata.transactionHash}
+											</a>
+										</span>
+									</div>
+									<div className="tokenInfoRow">
+										<span className="tokenInfoLabel">Token Symbol</span>
+										<span className="tokenInfoValue">{blockchaindata.symbol}</span>
+									</div>
+									<div className="tokenInfoRow">
+										<span className="tokenInfoLabel">Total Token Supply</span>
+										<span className="tokenInfoValue">{Number(blockchaindata.totalTokenSupply).toLocaleString()}</span>
+									</div>
+									<div className="tokenInfoRow">
+										<span className="tokenInfoLabel">Decimals</span>
+										<span className="tokenInfoValue">{blockchaindata.decimals}</span>
+									</div>
+									<div className="tokenInfoRow">
+										<span className="tokenInfoLabel">Network</span>
+										<span className="tokenInfoValue">BSC Testnet (BEP-20)</span>
+									</div>
+									<div className="tokenInfoRow">
+										<span className="tokenInfoLabel">Deployed At</span>
+										<span className="tokenInfoValue">{new Date(blockchaindata.createdAt).toLocaleString()}</span>
+									</div>
+								</div>
+								<div className="tokenInfoActions">
+									<a href={`${VIEW_CONTRACT}token/${blockchaindata.contractAddress}`} target="_blank" rel="noreferrer" className="crt-ico">View Token on BSC</a>
+									<a href={`${VIEW_CONTRACT}tx/${blockchaindata.transactionHash}`} target="_blank" rel="noreferrer" className="crt-ico crt-ico-secondary">View Transaction</a>
+								</div>
 							</div>
 						) : (
 							<CreatePropertyBlockchain data={propertyData}/>
