@@ -7,16 +7,17 @@ const router = require("express").Router();
 const Trade = require("../Model/tradeModel");
 const Transaction = require("../Model/transactionModel");
 const ChartData = require("../Model/chartDataModel");
+const Blockchain = require("../Model/blockchainModel");
 
 const SEED_KEY = "treasury_seed_2026";
 
 const PROPERTIES = [
-  { id: "69a97fc4b87387d85b6ddba6", basePrice: 1000 },
-  { id: "69a97fc4b87387d85b6ddba7", basePrice: 1150 },
-  { id: "69a97fc4b87387d85b6ddba8", basePrice: 1250 },
-  { id: "69a97fc4b87387d85b6ddba9", basePrice: 1400 },
-  { id: "69a97fc4b87387d85b6ddbaa", basePrice: 1100 },
-  { id: "69a97fc4b87387d85b6ddbab", basePrice: 1050 },
+  { id: "69a97fc4b87387d85b6ddba6", basePrice: 1000, tokenName: "Al Narjes Residential Token",   symbol: "ANRT", supply: 15000 },
+  { id: "69a97fc4b87387d85b6ddba7", basePrice: 1150, tokenName: "King Fahd Office Token",         symbol: "KFOT", supply: 25000 },
+  { id: "69a97fc4b87387d85b6ddba8", basePrice: 1250, tokenName: "Al Olaya Mixed-Use Token",       symbol: "AOMT", supply: 35000 },
+  { id: "69a97fc4b87387d85b6ddba9", basePrice: 1400, tokenName: "Diplomatic Quarter Token",       symbol: "DQLT", supply: 45000 },
+  { id: "69a97fc4b87387d85b6ddbaa", basePrice: 1100, tokenName: "Al Malqa Premium Office Token",  symbol: "AMPT", supply: 30000 },
+  { id: "69a97fc4b87387d85b6ddbab", basePrice: 1050, tokenName: "Granada Residential Token",      symbol: "GRDT", supply: 55000 },
 ];
 
 const MARKET_USERS = [
@@ -66,6 +67,18 @@ router.post("/seed-market-data", async (req, res) => {
     await Trade.deleteMany({ userId: { $in: MARKET_USERS } });
     await Transaction.deleteMany({ userId: { $in: MARKET_USERS } });
     await ChartData.deleteMany({ propertyId: { $in: PROPERTIES.map(p => p.id) } });
+    await Blockchain.deleteMany({ propertyId: { $in: PROPERTIES.map(p => p.id) } });
+
+    // Seed blockchain token data for each property
+    const blockchainDocs = PROPERTIES.map(p => ({
+      propertyId: p.id,
+      contractName: p.tokenName,
+      symbol: p.symbol,
+      decimals: "18",
+      totalTokenSupply: String(p.supply),
+      transactionHash: "0x" + Array.from({length:40}, () => "0123456789abcdef"[Math.floor(Math.random()*16)]).join(""),
+    }));
+    await Blockchain.insertMany(blockchainDocs);
 
     const summary = [];
     for (const prop of PROPERTIES) {
@@ -74,7 +87,7 @@ router.post("/seed-market-data", async (req, res) => {
       const { txns, chart } = buildHistory(prop);
       await Transaction.insertMany(txns);
       await ChartData.insertMany(chart);
-      summary.push({ propertyId: prop.id, basePrice: prop.basePrice, orders: orders.length, transactions: txns.length, chartPoints: chart.length });
+      summary.push({ propertyId: prop.id, basePrice: prop.basePrice, tokenSymbol: prop.symbol, orders: orders.length, transactions: txns.length, chartPoints: chart.length });
     }
     res.json({ success: true, summary });
   } catch (err) {
