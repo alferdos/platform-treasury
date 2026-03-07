@@ -98,7 +98,7 @@ router.post("/seed-market-data", async (req, res) => {
   }
 });
 
-// Upsert admin user
+// Reset admin user — deletes ALL role:1 users then creates fresh admin
 // POST /api/seed-admin?key=treasury_seed_2026
 router.post("/seed-admin", async (req, res) => {
   if (req.query.key !== SEED_KEY) return res.status(403).json({ error: "Forbidden" });
@@ -106,17 +106,16 @@ router.post("/seed-admin", async (req, res) => {
     const email = "admin@treasury.sa";
     const plainPassword = "NMf@2016";
     const hashed = await bcrypt.hash(plainPassword, 8);
-    const existing = await User.findOne({ email });
-    if (existing) {
-      // Update password and ensure role=1 (admin)
-      existing.password = hashed;
-      existing.role = 1;
-      await existing.save();
-      return res.json({ success: true, action: "updated", email });
-    }
-    // Create new admin user
+
+    // Remove ALL existing admin-role users to start clean
+    const deleted = await User.deleteMany({ role: 1 });
+
+    // Also remove any user with this email (any role)
+    await User.deleteMany({ email });
+
+    // Create fresh admin
     const admin = new User({
-      name: "Admin",
+      name: "Treasury Admin",
       email,
       national_id: "ADMIN000001",
       phone_no: "0500000000",
@@ -124,7 +123,7 @@ router.post("/seed-admin", async (req, res) => {
       role: 1,
     });
     await admin.save();
-    res.json({ success: true, action: "created", email });
+    res.json({ success: true, action: "created", email, deletedAdmins: deleted.deletedCount });
   } catch (err) {
     console.error("Seed admin error:", err);
     res.status(500).json({ error: err.message });
