@@ -545,6 +545,54 @@ const userController = {
 		}
 	},
 
+	// Admin: blockchain overview - all deployed property token contracts
+	getBlockchainOverview: async (req, res) => {
+		try {
+			const Property = require('../Model/propertyModel');
+			const properties = await Property.find({ contract_address: { $exists: true, $ne: null, $ne: '' } });
+			const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+			const abi = require('../config/abi.json');
+
+			const results = await Promise.all(properties.map(async (prop) => {
+				let onChain = null;
+				try {
+					const contract = new ethers.Contract(prop.contract_address, abi, provider);
+					const [name, symbol, totalSupply, decimals] = await Promise.all([
+						contract.name(),
+						contract.symbol(),
+						contract.totalSupply(),
+						contract.decimals(),
+					]);
+					onChain = {
+						name,
+						symbol,
+						totalSupply: ethers.utils.formatUnits(totalSupply, decimals),
+						decimals: decimals,
+					};
+				} catch (e) {
+					onChain = { error: e.message };
+				}
+				return {
+					_id: prop._id,
+					title: prop.title,
+					address: prop.address,
+					contract_address: prop.contract_address,
+					tokenPrice: prop.tokenPrice,
+					totalTokenSupply: prop.totalTokenSupply,
+					percentageOfOwnership: prop.percentageOfOwnership,
+					propertyEstimatedValue: prop.propertyEstimatedValue,
+					status: prop.status,
+					createdAt: prop.createdAt,
+					onChain,
+				};
+			}));
+
+			return res.json({ status: 1, data: results });
+		} catch (err) {
+			return res.status(500).json({ msg: err.message });
+		}
+	},
+
 	// Admin: dashboard analytics
 	getAdminAnalytics: async (req, res) => {
 		try {
