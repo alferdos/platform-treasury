@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useHistory, Link } from "react-router-dom";
-import { getDataAPI, postDataAPI } from "../../utils/API";
-import { editProperty } from "../../redux/actions/propertyAction";
-import CreatePropertyBlockchain from "./DeployNewICO";
-import RiyalSymbol from "../RiyalSymbol";
-import { VIEW_CONTRACT } from "../../utils/config";
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useHistory, Link } from 'react-router-dom';
+import { getDataAPI, postDataAPI } from '../../utils/API';
+import { editProperty } from '../../redux/actions/propertyAction';
+import CreatePropertyBlockchain from './DeployNewICO';
+import RiyalSymbol from '../RiyalSymbol';
+import { VIEW_CONTRACT } from '../../utils/config';
+import axios from 'axios';
 
 //create property component to write all details from form.
 
@@ -14,6 +15,9 @@ const EditProperty = () => {
 	const history = useHistory();
 	const [blockchaindata, setBlockchainData] = useState("");
 	const blockchainFetched = React.useRef(false);
+	const [newImages, setNewImages] = useState([]);
+	const [imageUploading, setImageUploading] = useState(false);
+	const [imageUploadMsg, setImageUploadMsg] = useState('');
 	const { property, ico } = useSelector((state) => state);
 	if (property.data) {
 		var response = property.data;
@@ -115,6 +119,30 @@ const EditProperty = () => {
 			getBlockchain(propertyData);
 		}
 	}, [propertyData._id]);
+
+	const handleImageUpload = async () => {
+		if (!newImages.length) return;
+		setImageUploading(true);
+		setImageUploadMsg('');
+		try {
+			const formData = new FormData();
+			formData.append('propertyId', propertyData._id);
+			newImages.forEach(img => formData.append('images', img));
+			const resp = await axios.post('/api/uploadPropertyImages', formData, {
+				headers: { 'content-type': 'multipart/form-data' },
+			});
+			if (resp.data.status === 1) {
+				setPropertyData(prev => ({ ...prev, imageName: resp.data.imageName }));
+				setNewImages([]);
+				setImageUploadMsg('Images updated successfully!');
+			} else {
+				setImageUploadMsg('Upload failed. Please try again.');
+			}
+		} catch (e) {
+			setImageUploadMsg('Upload error: ' + (e.response?.data?.msg || e.message));
+		}
+		setImageUploading(false);
+	};
 
 	return (
 		<div className="main_content">
@@ -252,23 +280,51 @@ const EditProperty = () => {
 										/>
 										<span className="error">{property.data ? property.data.errors.tokenPrice : ""}</span>
 									</div>
-									<div className="mb-3">
-										<label className="form-label">Pictures</label>
-										<div className="field" align="left">
-						<div className="edit-image-upload">
-						{imageName.map((img, idx) => (
-							<img
-								key={idx}
-								src={`${img}`}
-								alt="Property"
-								style={{maxWidth:'200px', maxHeight:'150px', objectFit:'cover', borderRadius:'8px', border:'1px solid #ddd'}}
-								onError={(e) => { e.target.style.display='none'; }}
-							/>
-						))}
-						{imageName.length === 0 && <span style={{color:'#999',fontSize:'0.85em'}}>No image uploaded</span>}
-						</div>
-										</div>
+								<div className="mb-3">
+									<label className="form-label">Pictures</label>
+									{/* Current images */}
+									<div style={{display:'flex',flexWrap:'wrap',gap:10,marginBottom:12}}>
+										{imageName && imageName.length > 0 ? imageName.map((img, idx) => (
+											<img key={idx} src={img} alt="Property"
+												style={{width:160,height:110,objectFit:'cover',borderRadius:8,border:'2px solid #e5e7eb'}}
+												onError={(e) => { e.target.style.display='none'; }}
+											/>
+										)) : <span style={{color:'#999',fontSize:'0.85em'}}>No images yet</span>}
 									</div>
+									{/* Upload new images */}
+									<div style={{border:'2px dashed #d1d5db',borderRadius:10,padding:'16px 20px',background:'#f9fafb'}}>
+										<label style={{display:'block',marginBottom:8,fontWeight:600,fontSize:13,color:'#374151'}}>Replace Images</label>
+										<input
+											type="file"
+											multiple
+											accept="image/*"
+											className="form-control"
+											style={{marginBottom:10}}
+											onChange={(e) => setNewImages(Array.from(e.target.files))}
+										/>
+										{newImages.length > 0 && (
+											<div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:10}}>
+												{newImages.map((f,i) => (
+													<img key={i} src={URL.createObjectURL(f)} alt="preview"
+														style={{width:100,height:70,objectFit:'cover',borderRadius:6,border:'2px solid #c9a84c'}}/>
+												))}
+											</div>
+										)}
+										<button
+											type="button"
+											onClick={handleImageUpload}
+											disabled={imageUploading || newImages.length === 0}
+											style={{background: newImages.length === 0 ? '#e5e7eb' : '#0e3725',color: newImages.length === 0 ? '#9ca3af' : '#fff',border:'none',borderRadius:8,padding:'9px 20px',fontWeight:600,fontSize:13,cursor: newImages.length === 0 ? 'not-allowed' : 'pointer'}}
+										>
+											{imageUploading ? 'Uploading…' : `Upload ${newImages.length > 0 ? `(${newImages.length} file${newImages.length>1?'s':''})` : 'Images'}`}
+										</button>
+										{imageUploadMsg && (
+											<div style={{marginTop:8,fontSize:13,color: imageUploadMsg.includes('success') ? '#065f46' : '#991b1b',fontWeight:600}}>
+												{imageUploadMsg}
+											</div>
+										)}
+									</div>
+								</div>
 									<div className="mb-3">
 										<label className="form-label">Property Estimated Value(In m2)</label>
 										<input

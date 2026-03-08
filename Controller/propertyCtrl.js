@@ -76,30 +76,20 @@ const propertyCtrl = {
 		}
 	},
 
-    upload:  async (req, res) => {
+     upload:  async (req, res) => {
         try {
             const images = req.files["images"];
             let imagename = [];
-
-            if (process.env.CLOUDINARY_CLOUD_NAME) {
-                // Use Cloudinary for persistent storage
-                if (Array.isArray(images)) {
-                    imagename = await Promise.all(images.map(uploadToCloudinary));
-                } else {
-                    imagename = [await uploadToCloudinary(images)];
-                }
+            // Always use Cloudinary for persistent storage
+            if (Array.isArray(images)) {
+                imagename = await Promise.all(images.map(uploadToCloudinary));
             } else {
-                // Fallback: store locally (not persistent on Railway)
-                if (Array.isArray(images)) {
-                    imagename = images.map(saveImage);
-                } else {
-                    imagename = saveImage(images);
-                }
+                imagename = [await uploadToCloudinary(images)];
             }
-
-            const deed = req.files.deed;
-            let deed_url;
-            if (process.env.CLOUDINARY_CLOUD_NAME) {
+            // Handle deed upload (optional)
+            let deed_url = null;
+            if (req.files && req.files.deed) {
+                const deed = req.files.deed;
                 deed_url = await new Promise((resolve, reject) => {
                     cloudinary.uploader.upload_stream(
                         { folder: 'treasury-deeds', resource_type: 'raw' },
@@ -109,12 +99,7 @@ const propertyCtrl = {
                         }
                     ).end(deed.data);
                 });
-            } else {
-                const deedname = prepareFileName(deed);
-                deed.mv("./frontend/public/deed/" + deedname);
-                deed_url = `/deed/${deedname}`;
             }
-
             res.json({ 
                 image_url: imagename,
                 deed_url,
@@ -208,6 +193,26 @@ const propertyCtrl = {
 		} catch (err) {
 			
 			return res.status(500).json({ msg: err.message ,updateData:updateData , err:err});
+		}
+	},
+
+	// Upload new images for an existing property and update imageName array
+	uploadPropertyImages: async (req, res) => {
+		try {
+			const propertyId = req.body.propertyId;
+			if (!propertyId) return res.status(400).json({ msg: 'propertyId is required' });
+			const images = req.files && req.files['images'];
+			if (!images) return res.status(400).json({ msg: 'No images provided' });
+			let imagename = [];
+			if (Array.isArray(images)) {
+				imagename = await Promise.all(images.map(uploadToCloudinary));
+			} else {
+				imagename = [await uploadToCloudinary(images)];
+			}
+			await property.updateOne({ _id: propertyId }, { imageName: imagename });
+			res.json({ status: 1, imageName: imagename });
+		} catch (err) {
+			return res.status(500).json({ msg: err.message });
 		}
 	},
 
