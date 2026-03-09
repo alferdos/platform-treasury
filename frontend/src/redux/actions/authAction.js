@@ -140,28 +140,39 @@ export const updateProfile = (data) => async (dispatch) => {
 	}
 };
 
-export const updateProfilePic = (data) => async (dispatch) => {
+export const updateProfilePic = (data) => async (dispatch, getState) => {
 	try {
 		dispatch({ type: GlobalTypes.NOTIFY, payload: { loading: true } });
 		const res = await postDataAPIBare("update_profilePic", data);
 		
 		let response = res.data;
-      if (response.status == 1) {
-        swal("Success", "Profile image updated successfully!", "success");
-      }
-
-		dispatch({
-			type: GlobalTypes.AUTH,
-			payload: {
-				user: res.data,
-			},
-		});
+		if (response.status == 1) {
+			swal("Success", "Profile image updated successfully!", "success");
+			// Merge the new profile_image into the existing auth.data state
+			const currentAuth = getState().auth;
+			const newProfileImage = response.data?.profile_image;
+			if (newProfileImage && currentAuth.data) {
+				dispatch({
+					type: GlobalTypes.AUTH,
+					payload: {
+						...currentAuth,
+						data: {
+							...currentAuth.data,
+							user: {
+								...currentAuth.data.user,
+								profile_image: newProfileImage,
+							},
+						},
+					},
+				});
+			}
+		}
 		dispatch({ type: GlobalTypes.NOTIFY, payload: { loading: false } });
 	} catch (err) {
 		dispatch({
 			type: GlobalTypes.NOTIFY,
 			payload: {
-				error: err.response.data.msg,
+				error: err?.response?.data?.msg || 'Upload failed',
 			},
 		});
 	}
