@@ -118,9 +118,12 @@ const AdminHeader = () => {
                   to="/admin/profile"
                 >
                   <img
-                    src={`/profilePic/${
-                      auth.data ? auth?.data?.user?.profile_image : ""
-                    }`}
+                    src={auth.data?.user?.profile_image && auth.data.user.profile_image.startsWith('http')
+                      ? auth.data.user.profile_image
+                      : `https://res.cloudinary.com/dfzwynbsl/image/upload/w_40,h_40,c_fill,r_max,co_rgb:f8b602,l_text:Arial_20_bold:${(auth.data?.user?.name || 'A').charAt(0).toUpperCase()}/fl_layer_apply/v1773045169/avatar_base.png`}
+                    onError={e => { e.target.src = `https://res.cloudinary.com/dfzwynbsl/image/upload/w_40,h_40,c_fill,r_max,co_rgb:f8b602,l_text:Arial_20_bold:A/fl_layer_apply/v1773045169/avatar_base.png`; }}
+                    style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', marginRight: '6px' }}
+                    alt="profile"
                   />
                   Welcome, {auth.data ? auth.data.user.name.split(" ")[0] : ""}
                 </Link>
